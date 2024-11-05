@@ -145,7 +145,7 @@ app.post('/verificar-licencia', async (req, res) => {
                 await licenciasRef.doc(doc.id).update({
                     numeroFallosIP,
                     historicoIPFallida,
-                    bloqueado: true // Bloquear la licencia
+                    //bloqueado: true // Bloquear la licencia
                 });
 
                 // Enviar correo al administrador
