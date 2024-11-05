@@ -165,6 +165,9 @@ app.post('/verificar-licencia', async (req, res) => {
         // Agregar IP al historial de accesos si es diferente de la última IP
         const historicoIPs = data.IPs || [];
         if (historicoIPs.length === 0 || historicoIPs[historicoIPs.length - 1] !== ip) {
+            if (historicoIPs.length >= 50) {
+                historicoIPs.shift(); // Eliminar la IP más antigua si ya tiene 50
+            }
             historicoIPs.push(ip);
             await licenciasRef.doc(doc.id).update({
                 IPs: historicoIPs
