@@ -163,11 +163,11 @@ app.post('/verificar-licencia', async (req, res) => {
         }
 
         // Agregar IP al historial de accesos si es diferente de la última IP
-        const historicoIPAcceso = data.historicoIPAcceso || [];
-        if (historicoIPAcceso.length === 0 || historicoIPAcceso[historicoIPAcceso.length - 1] !== ip) {
-            historicoIPAcceso.push(ip);
+        const historicoIPs = data.IPs || [];
+        if (historicoIPs.length === 0 || historicoIPs[historicoIPs.length - 1] !== ip) {
+            historicoIPs.push(ip);
             await licenciasRef.doc(doc.id).update({
-                historicoIPAcceso: historicoIPAcceso
+                IPs: historicoIPs
             });
         }
 
