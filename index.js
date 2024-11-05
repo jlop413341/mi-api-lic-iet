@@ -12,7 +12,8 @@ const app = express();
 app.use(express.json());
 
 // Configurar Firebase Admin con las credenciales
-const serviceAccount = require('./config/licenciasiet-firebase-adminsdk-lx2et-7b021ea963.json');
+//const serviceAccount = require('./config/licenciasiet-firebase-adminsdk-lx2et-7b021ea963.json');
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
