@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
 const MAX_IPS = 50; // Máximo de IPs a almacenar
-const LICENCIA_PERMITIDA = "aa9eg85hj9ae85hg9ae58g98eg8aweg0a8e5gh8e5ae0"; // Cambia esto por tu licencia válida
+const LICENCIA_PERMITIDA = process.env.LICENCIA_PERMITIDA; // Cambia esto por tu licencia válida desde el entorno
 
 // Configurar dotenv para usar variables de entorno
 dotenv.config();
