@@ -150,7 +150,7 @@ app.post('/verificar-licencia', async (req, res) => {
 
                 // Enviar correo al administrador
                 await enviarCorreoAdmin(data, ip);
-                return res.status(403).json({ mensaje: 'Acceso denegado. IP diferente en menos de 24 horas. La licencia ha sido bloqueada.' });
+                return res.status(403).json({ mensaje: 'Acceso denegado. IP diferente en menos de 24 horas.' });
             }
         }
 
