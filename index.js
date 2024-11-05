@@ -15,7 +15,7 @@ app.use(express.json());
 //const serviceAccount = require('./config/licenciasiet-firebase-adminsdk-lx2et-7b021ea963.json');
 //const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
-/ Configurar Firebase Admin con las credenciales separadas
+// Configurar Firebase Admin con las credenciales separadas
 const serviceAccount = {
     type: 'service_account',
     project_id: process.env.FIREBASE_PROJECT_ID,
