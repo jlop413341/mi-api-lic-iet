@@ -72,6 +72,62 @@ async function enviarCorreoAdmin(licenciaData, ip) {
     }
 }
 
+
+
+// Ruta para crear una nueva licencia con el nombre del documento como parámetro
+app.post('/crear-licencia/:documentName', async (req, res) => {
+    const { documentName } = req.params; // Extraer el nombre del documento de los parámetros de la URL
+    const { numeroMeses } = req.body; // Extrae el número de meses del cuerpo de la solicitud
+
+    // Verificar si el número de meses es un número válido
+    if (typeof numeroMeses !== 'number' || numeroMeses <= 0) {
+        return res.status(400).json({ mensaje: 'Número de meses inválido. Debe ser un número positivo.' });
+    }
+
+    // Verificar si la licencia proporcionada es la permitida
+    const licencia = req.body.licencia; // Asegúrate de que esto venga del cuerpo de la solicitud
+    if (licencia !== process.env.LICENCIA_PERMITIDA) {
+        return res.status(403).json({ mensaje: 'Acceso denegado. Licencia no válida.' });
+    }
+
+    try {
+        // Comprobar si el documento ya existe
+        const docRef = db.collection('LicenciasIET').doc(documentName);
+        const doc = await docRef.get();
+
+        if (doc.exists) {
+            return res.status(409).json({ mensaje: 'El documento ya existe. No se ha realizado ninguna acción.' });
+        }
+
+        // Generar una nueva licencia aleatoria de 20 caracteres
+        const nuevaLicenciaGenerada = generarLicenciaAleatoria(20);
+
+        // Calcular la fecha de expiración sumando los meses actuales
+        const fechaActual = new Date();
+        const fechaExpiracion = new Date(fechaActual.setMonth(fechaActual.getMonth() + numeroMeses));
+
+        // Crea el nuevo documento en la colección 'LicenciasIET' con el nombre proporcionado
+        const nuevaLicencia = {
+            bloqueado: false,
+            fechaExpiracion: admin.firestore.Timestamp.fromDate(fechaExpiracion), // Asignar la nueva fecha de expiración
+            fechaUltimaActivacion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
+            ipUltimaActivacion: "",
+            licencia: nuevaLicenciaGenerada, // Asignar la nueva licencia generada
+            numeroFallosIP: 0,
+            IPs: [],
+            historicoIPFallida: [],
+        };
+
+        await docRef.set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
+
+        return res.status(201).json({ mensaje: 'Licencia creada exitosamente.', licenciaGenerada: nuevaLicenciaGenerada });
+    } catch (error) {
+        console.error('Error al crear la licencia:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+});
+
+
 // Rutas para manejar solicitudes...
 
 // Ruta para verificar la licencia
