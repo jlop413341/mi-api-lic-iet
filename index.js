@@ -91,8 +91,9 @@ app.post('/prueba', (req, res) => {
 });
 
 
-// Ruta para crear una nueva licencia
-app.post('/crear-licencia', async (req, res) => {
+// Ruta para crear una nueva licencia con el nombre del documento como parámetro
+app.post('/crear-licencia/:documentName', async (req, res) => {
+    const { documentName } = req.params; // Extraer el nombre del documento de los parámetros de la URL
     const { licencia, ...otrosCampos } = req.body; // Extrae otros campos del cuerpo de la solicitud
 
     // Verificar si la licencia proporcionada es la permitida
@@ -101,7 +102,7 @@ app.post('/crear-licencia', async (req, res) => {
     }
 
     try {
-        // Crea el nuevo documento en la colección 'LicenciasIET'
+        // Crea el nuevo documento en la colección 'LicenciasIET' con el nombre proporcionado
         const nuevaLicencia = {
             bloqueado: false,
             fechaExpiracion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
@@ -114,7 +115,7 @@ app.post('/crear-licencia', async (req, res) => {
             ...otrosCampos // Incluye otros campos si es necesario
         };
 
-        await db.collection('LicenciasIET').add(nuevaLicencia);
+        await db.collection('LicenciasIET').doc(documentName).set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
 
         return res.status(201).json({ mensaje: 'Licencia creada exitosamente.' });
     } catch (error) {
