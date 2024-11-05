@@ -71,9 +71,15 @@ const ajustarFechaLocal = (fecha) => {
 };
 
 // Ruta básica de prueba
-app.get('/prueba', (req, res) => {
+app.get('/', (req, res) => {
     res.send('API de Licencias en línea 2323');
 });
+
+app.post('/prueba', (req, res) => {
+    res.json({ mensaje: "Ruta de prueba funcionando" });
+});
+
+
 
 // Ruta para verificar la licencia
 app.post('/verificar-licencia', async (req, res) => {
