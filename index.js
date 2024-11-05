@@ -91,10 +91,21 @@ app.post('/prueba', (req, res) => {
 });
 
 
+// Función para generar una cadena aleatoria alfanumérica de una longitud dada
+function generarLicenciaAleatoria(longitud) {
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let licenciaGenerada = '';
+    for (let i = 0; i < longitud; i++) {
+        const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+        licenciaGenerada += caracteres.charAt(indiceAleatorio);
+    }
+    return licenciaGenerada;
+}
+
 // Ruta para crear una nueva licencia con el nombre del documento como parámetro
 app.post('/crear-licencia/:documentName', async (req, res) => {
     const { documentName } = req.params; // Extraer el nombre del documento de los parámetros de la URL
-    const { licencia, ...otrosCampos } = req.body; // Extrae otros campos del cuerpo de la solicitud
+    const { licencia } = req.body; // Extrae la licencia del cuerpo de la solicitud
 
     // Verificar si la licencia proporcionada es la permitida
     if (licencia !== LICENCIA_PERMITIDA) {
@@ -102,22 +113,24 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
     }
 
     try {
+        // Generar una nueva licencia aleatoria de 20 caracteres
+        const nuevaLicenciaGenerada = generarLicenciaAleatoria(20);
+
         // Crea el nuevo documento en la colección 'LicenciasIET' con el nombre proporcionado
         const nuevaLicencia = {
             bloqueado: false,
             fechaExpiracion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
             fechaUltimaActivacion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
             ipUltimaActivacion: "",
-            licencia: licencia,
+            licencia: nuevaLicenciaGenerada, // Asignar la nueva licencia generada
             numeroFallosIP: 0,
             IPs: [],
             historicoIPFallida: [],
-            ...otrosCampos // Incluye otros campos si es necesario
         };
 
         await db.collection('LicenciasIET').doc(documentName).set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
 
-        return res.status(201).json({ mensaje: 'Licencia creada exitosamente.' });
+        return res.status(201).json({ mensaje: 'Licencia creada exitosamente.', licenciaGenerada: nuevaLicenciaGenerada });
     } catch (error) {
         console.error('Error al crear la licencia:', error);
         return res.status(500).json({ mensaje: 'Error interno del servidor.' });
