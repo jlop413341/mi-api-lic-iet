@@ -76,7 +76,8 @@ async function enviarCorreoAdmin(licenciaData, ip) {
 
 // Ruta para verificar la licencia
 app.post('/verificar-licencia', async (req, res) => {
-    const { licencia, ip } = req.body;
+    const { licencia } = req.body; // Obtener la licencia del cuerpo de la solicitud
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress; // Capturar la IP del cliente
 
     try {
         const licenciasRef = db.collection('LicenciasIET');
