@@ -117,7 +117,6 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
 
         // Crea el nuevo documento en la colección 'LicenciasIET' con el nombre proporcionado
         const nuevaLicencia = {
-            bloqueado: false,
             fechaExpiracion: admin.firestore.Timestamp.fromDate(fechaExpiracion), // Asignar la nueva fecha de expiración
             fechaUltimaActivacion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
             ipUltimaActivacion: "",
@@ -157,7 +156,7 @@ app.post('/verificar-licencia', async (req, res) => {
         const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
         const fechaActual = new Date();
 
-        if (data.bloqueado && fechaBloqueo && fechaActual < fechaBloqueo) {
+        if (fechaBloqueo && fechaActual < fechaBloqueo) {
             return res.status(403).json({ mensaje: 'Licencia bloqueada hasta: ' + fechaBloqueo });
         }
 
