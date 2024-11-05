@@ -3,6 +3,8 @@ const express = require('express');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
+const MAX_IPS = 50; // Máximo de IPs a almacenar
+
 
 // Configurar dotenv para usar variables de entorno
 dotenv.config();
@@ -133,10 +135,10 @@ app.post('/verificar-licencia', async (req, res) => {
 
                 // Actualizar el historial de IPs fallidas
                 const historicoIPFallida = data.historicoIPFallida || [];
-                if (historicoIPFallida.length < 50) {
+                if (historicoIPFallida.length < MAX_IPS) {
                     historicoIPFallida.push(nuevoRegistro);
                 } else {
-                    historicoIPFallida.shift(); // Eliminar el primer elemento si ya tiene 50
+                    historicoIPFallida.shift(); // Eliminar el primer elemento si ya tiene MAX_IPS
                     historicoIPFallida.push(nuevoRegistro);
                 }
 
@@ -165,8 +167,8 @@ app.post('/verificar-licencia', async (req, res) => {
         // Agregar IP al historial de accesos si es diferente de la última IP
         const historicoIPs = data.IPs || [];
         if (historicoIPs.length === 0 || historicoIPs[historicoIPs.length - 1] !== ip) {
-            if (historicoIPs.length >= 50) {
-                historicoIPs.shift(); // Eliminar la IP más antigua si ya tiene 50
+            if (historicoIPs.length >= MAX_IPS) {
+                historicoIPs.shift(); // Eliminar la IP más antigua si ya tiene MAX_IPS
             }
             historicoIPs.push(ip);
             await licenciasRef.doc(doc.id).update({
