@@ -3,9 +3,8 @@ const express = require('express');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
-const MAX_IPS = 4; // Máximo de IPs a almacenar
-const LICENCIA_PERMITIDA = "aa9eg85hj9ae85hg9ae58g98eg8aweg0a8e5gh8e5ae0";
-
+const MAX_IPS = 50; // Máximo de IPs a almacenar
+const LICENCIA_PERMITIDA = "aa9eg85hj9ae85hg9ae58g98eg8aweg0a8e5gh8e5ae0"; // Cambia esto por tu licencia válida
 
 // Configurar dotenv para usar variables de entorno
 dotenv.config();
@@ -13,10 +12,6 @@ dotenv.config();
 // Inicializar Express
 const app = express();
 app.use(express.json());
-
-// Configurar Firebase Admin con las credenciales
-//const serviceAccount = require('./config/licenciasiet-firebase-adminsdk-lx2et-7b021ea963.json');
-//const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
 // Configurar Firebase Admin con las credenciales separadas
 const serviceAccount = {
@@ -32,7 +27,6 @@ const serviceAccount = {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
 };
 
-
 // Inicia Firebase solo si las credenciales fueron cargadas correctamente
 if (serviceAccount) {
     admin.initializeApp({
@@ -42,9 +36,6 @@ if (serviceAccount) {
 } else {
     console.error("Failed to initialize Firebase Admin SDK due to missing credentials.");
 }
-
-
-
 
 // Inicializar Firestore
 const db = admin.firestore();
@@ -75,12 +66,6 @@ async function enviarCorreoAdmin(licenciaData, ip) {
     }
 }
 
-// Ajustar la fecha y hora en el formato deseado
-const ajustarFechaLocal = (fecha) => {
-    const opciones = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'UTC' };
-    return new Intl.DateTimeFormat('es-ES', opciones).format(fecha).replace(/\//g, '-').replace(',', '');
-};
-
 // Ruta básica de prueba
 app.get('/', (req, res) => {
     res.send('API de Licencias en línea 2323');
@@ -89,7 +74,6 @@ app.get('/', (req, res) => {
 app.post('/prueba', (req, res) => {
     res.json({ mensaje: "Ruta de prueba funcionando" });
 });
-
 
 // Función para generar una cadena aleatoria alfanumérica de una longitud dada
 function generarLicenciaAleatoria(longitud) {
@@ -105,7 +89,7 @@ function generarLicenciaAleatoria(longitud) {
 // Ruta para crear una nueva licencia con el nombre del documento como parámetro
 app.post('/crear-licencia/:documentName', async (req, res) => {
     const { documentName } = req.params; // Extraer el nombre del documento de los parámetros de la URL
-    const { numeroMeses } = req.body; // Extrae el número de meses del cuerpo de la solicitud
+    const { numeroMeses, licencia } = req.body; // Extrae el número de meses y la licencia del cuerpo de la solicitud
 
     // Verificar si el número de meses es un número válido
     if (typeof numeroMeses !== 'number' || numeroMeses <= 0) {
@@ -153,13 +137,6 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
         return res.status(500).json({ mensaje: 'Error interno del servidor.' });
     }
 });
-
-
-
-
-
-
-
 
 // Ruta para verificar la licencia
 app.post('/verificar-licencia', async (req, res) => {
@@ -217,7 +194,6 @@ app.post('/verificar-licencia', async (req, res) => {
                 await licenciasRef.doc(doc.id).update({
                     numeroFallosIP,
                     historicoIPFallida,
-                    //bloqueado: true // Bloquear la licencia
                 });
 
                 // Enviar correo al administrador
