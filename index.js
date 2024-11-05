@@ -157,7 +157,8 @@ app.post('/verificar-licencia', async (req, res) => {
 });
 
 // Iniciar el servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+//const PORT = process.env.PORT || 3000;
+//app.listen(PORT, () => {
+//    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+//});
+module.exports = app;
