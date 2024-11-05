@@ -12,7 +12,8 @@ const app = express();
 app.use(express.json());
 
 // Configurar Firebase Admin con las credenciales
-const serviceAccount = require('C:\\Users\\alber\\OneDrive\\Escritorio\\APILIC1\\licenciasiet-firebase-adminsdk-lx2et-7b021ea963.json'); // Ruta al archivo de clave JSON de Firebase
+const serviceAccount = require('./config/licenciasiet-firebase-adminsdk-lx2et-7b021ea963.json');
+
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
