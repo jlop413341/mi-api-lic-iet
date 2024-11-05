@@ -72,7 +72,6 @@ async function enviarCorreoAdmin(licenciaData, ip) {
     }
 }
 
-
 // Función para generar una cadena aleatoria alfanumérica de una longitud dada
 function generarLicenciaAleatoria(longitud) {
     const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -83,8 +82,6 @@ function generarLicenciaAleatoria(longitud) {
     }
     return licenciaGenerada;
 }
-
-
 
 // Ruta para crear una nueva licencia con el nombre del documento como parámetro
 app.post('/crear-licencia/:documentName', async (req, res) => {
@@ -98,7 +95,7 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
 
     // Verificar si la licencia proporcionada es la permitida
     const licencia = req.body.licencia; // Asegúrate de que esto venga del cuerpo de la solicitud
-    if (licencia !== process.env.LICENCIA_PERMITIDA) {
+    if (licencia !== LICENCIA_PERMITIDA) {
         return res.status(403).json({ mensaje: 'Acceso denegado. Licencia no válida.' });
     }
 
@@ -128,6 +125,7 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
             numeroFallosIP: 0,
             IPs: [],
             historicoIPFallida: [],
+            fechaBloqueo: null // Campo para la fecha de bloqueo inicializado como null
         };
 
         await docRef.set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
@@ -138,9 +136,6 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
         return res.status(500).json({ mensaje: 'Error interno del servidor.' });
     }
 });
-
-
-// Rutas para manejar solicitudes...
 
 // Ruta para verificar la licencia
 app.post('/verificar-licencia', async (req, res) => {
@@ -160,7 +155,13 @@ app.post('/verificar-licencia', async (req, res) => {
 
         // Verificar si la licencia está bloqueada
         if (data.bloqueado) {
-            return res.status(403).json({ mensaje: 'Acceso denegado. La licencia está bloqueada.' });
+            // Comprobar si la fecha de bloqueo ha pasado
+            const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
+            const fechaActual = new Date();
+
+            if (fechaBloqueo && fechaActual < fechaBloqueo) {
+                return res.status(403).json({ mensaje: 'Licencia bloqueada hasta: ' + fechaBloqueo });
+            }
         }
 
         const fechaExpiracion = data.fechaExpiracion.toDate();
@@ -199,6 +200,8 @@ app.post('/verificar-licencia', async (req, res) => {
                 await licenciasRef.doc(doc.id).update({
                     numeroFallosIP,
                     historicoIPFallida,
+                    // Establecer la fecha de bloqueo a 24 horas a partir de ahora
+                    fechaBloqueo: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)) // 24 horas en milisegundos
                 });
 
                 // Enviar correo al administrador
