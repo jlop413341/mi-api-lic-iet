@@ -39,11 +39,6 @@ if (serviceAccount) {
 
 
 
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
-
 // Inicializar Firestore
 const db = admin.firestore();
 
