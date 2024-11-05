@@ -195,16 +195,16 @@ app.post('/verificar-licencia', async (req, res) => {
                     historicoIPFallida.push(nuevoRegistro);
                 }
 
-                // Incrementar el contador de fallos de IP
+                // Incrementar el contador de fallos de IP y establecer la fecha de bloqueo
                 numeroFallosIP++;
+                const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 horas en milisegundos
                 await licenciasRef.doc(doc.id).update({
                     numeroFallosIP,
                     historicoIPFallida,
-                    // Establecer la fecha de bloqueo a 24 horas a partir de ahora
-                    fechaBloqueo: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)) // 24 horas en milisegundos
+                    fechaBloqueo: nuevaFechaBloqueo // Establecer la nueva fecha de bloqueo
                 });
 
-                // Enviar correo al administrador
+                // Enviar correo al administrador solo si se actualiza la fecha de bloqueo
                 await enviarCorreoAdmin(data, ip);
                 return res.status(403).json({ mensaje: 'Acceso denegado. IP diferente en menos de 24 horas.' });
             }
