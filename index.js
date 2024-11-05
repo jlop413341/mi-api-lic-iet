@@ -154,18 +154,14 @@ app.post('/verificar-licencia', async (req, res) => {
         const data = doc.data();
 
         // Verificar si la licencia está bloqueada
-        if (data.bloqueado) {
-            // Comprobar si la fecha de bloqueo ha pasado
-            const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
-            const fechaActual = new Date();
+        const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
+        const fechaActual = new Date();
 
-            if (fechaBloqueo && fechaActual < fechaBloqueo) {
-                return res.status(403).json({ mensaje: 'Licencia bloqueada hasta: ' + fechaBloqueo });
-            }
+        if (data.bloqueado && fechaBloqueo && fechaActual < fechaBloqueo) {
+            return res.status(403).json({ mensaje: 'Licencia bloqueada hasta: ' + fechaBloqueo });
         }
 
         const fechaExpiracion = data.fechaExpiracion.toDate();
-        const fechaActual = new Date();
 
         // Verificar expiración y IP
         if (fechaActual > fechaExpiracion) {
@@ -182,8 +178,6 @@ app.post('/verificar-licencia', async (req, res) => {
             // Solo incrementa el número de fallos si la diferencia de horas es menor a 24
             if (diferenciaHoras < 24) {
                 // Solo actualizar la fecha de bloqueo si no ha pasado
-                const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
-
                 if (!fechaBloqueo || fechaActual >= fechaBloqueo) {
                     // Crear el nuevo registro para el histórico
                     const ultimaActivacionFormateada = ajustarFechaLocal(fechaUltimaActivacion);
