@@ -183,7 +183,8 @@ app.post('/verificar-licencia', async (req, res) => {
             if (diferenciaHoras < 24) {
                 // Solo actualizar la fecha de bloqueo si no ha pasado
                 const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
-                if (!fechaBloqueo || fechaActual > fechaBloqueo) {
+
+                if (!fechaBloqueo || fechaActual >= fechaBloqueo) {
                     // Crear el nuevo registro para el histórico
                     const ultimaActivacionFormateada = ajustarFechaLocal(fechaUltimaActivacion);
                     const intentoFormateado = ajustarFechaLocal(fechaActual);
