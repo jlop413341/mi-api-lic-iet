@@ -15,6 +15,22 @@ app.use(express.json());
 //const serviceAccount = require('./config/licenciasiet-firebase-adminsdk-lx2et-7b021ea963.json');
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
+
+
+if (process.env.FIREBASE_CREDENTIALS_JSON) {
+    try {
+        const credentials = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
+        console.log("Firebase credentials loaded successfully:", credentials);
+    } catch (error) {
+        console.error("Error parsing Firebase credentials JSON:", error);
+    }
+} else {
+    console.error("FIREBASE_CREDENTIALS_JSON environment variable is not set.");
+}
+
+
+
+
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
