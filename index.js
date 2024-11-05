@@ -113,6 +113,14 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
     }
 
     try {
+        // Comprobar si el documento ya existe
+        const docRef = db.collection('LicenciasIET').doc(documentName);
+        const doc = await docRef.get();
+
+        if (doc.exists) {
+            return res.status(409).json({ mensaje: 'El documento ya existe. No se ha realizado ninguna acción.' });
+        }
+
         // Generar una nueva licencia aleatoria de 20 caracteres
         const nuevaLicenciaGenerada = generarLicenciaAleatoria(20);
 
@@ -128,7 +136,7 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
             historicoIPFallida: [],
         };
 
-        await db.collection('LicenciasIET').doc(documentName).set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
+        await docRef.set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
 
         return res.status(201).json({ mensaje: 'Licencia creada exitosamente.', licenciaGenerada: nuevaLicenciaGenerada });
     } catch (error) {
