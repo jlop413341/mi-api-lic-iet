@@ -3,7 +3,7 @@ const express = require('express');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
-const MAX_IPS = 50; // Máximo de IPs a almacenar
+const MAX_IPS = 4; // Máximo de IPs a almacenar
 
 
 // Configurar dotenv para usar variables de entorno
