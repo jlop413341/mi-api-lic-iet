@@ -181,31 +181,35 @@ app.post('/verificar-licencia', async (req, res) => {
         if (ip !== ipUltimaActivacion) {
             // Solo incrementa el número de fallos si la diferencia de horas es menor a 24
             if (diferenciaHoras < 24) {
-                // Crear el nuevo registro para el histórico
-                const ultimaActivacionFormateada = ajustarFechaLocal(fechaUltimaActivacion);
-                const intentoFormateado = ajustarFechaLocal(fechaActual);
-                const nuevoRegistro = `Última IP activada: ${ipUltimaActivacion} | Fecha de última IP: ${ultimaActivacionFormateada} | IP del intento: ${ip} | Fecha del intento: ${intentoFormateado}`;
+                // Solo actualizar la fecha de bloqueo si no ha pasado
+                const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
+                if (!fechaBloqueo || fechaActual > fechaBloqueo) {
+                    // Crear el nuevo registro para el histórico
+                    const ultimaActivacionFormateada = ajustarFechaLocal(fechaUltimaActivacion);
+                    const intentoFormateado = ajustarFechaLocal(fechaActual);
+                    const nuevoRegistro = `Última IP activada: ${ipUltimaActivacion} | Fecha de última IP: ${ultimaActivacionFormateada} | IP del intento: ${ip} | Fecha del intento: ${intentoFormateado}`;
 
-                // Actualizar el historial de IPs fallidas
-                const historicoIPFallida = data.historicoIPFallida || [];
-                if (historicoIPFallida.length < MAX_IPS) {
-                    historicoIPFallida.push(nuevoRegistro);
-                } else {
-                    historicoIPFallida.shift(); // Eliminar el primer elemento si ya tiene MAX_IPS
-                    historicoIPFallida.push(nuevoRegistro);
+                    // Actualizar el historial de IPs fallidas
+                    const historicoIPFallida = data.historicoIPFallida || [];
+                    if (historicoIPFallida.length < MAX_IPS) {
+                        historicoIPFallida.push(nuevoRegistro);
+                    } else {
+                        historicoIPFallida.shift(); // Eliminar el primer elemento si ya tiene MAX_IPS
+                        historicoIPFallida.push(nuevoRegistro);
+                    }
+
+                    // Incrementar el contador de fallos de IP y establecer la fecha de bloqueo
+                    numeroFallosIP++;
+                    const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 horas en milisegundos
+                    await licenciasRef.doc(doc.id).update({
+                        numeroFallosIP,
+                        historicoIPFallida,
+                        fechaBloqueo: nuevaFechaBloqueo // Establecer la nueva fecha de bloqueo
+                    });
+
+                    // Enviar correo al administrador solo si se actualiza la fecha de bloqueo
+                    await enviarCorreoAdmin(data, ip);
                 }
-
-                // Incrementar el contador de fallos de IP y establecer la fecha de bloqueo
-                numeroFallosIP++;
-                const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 horas en milisegundos
-                await licenciasRef.doc(doc.id).update({
-                    numeroFallosIP,
-                    historicoIPFallida,
-                    fechaBloqueo: nuevaFechaBloqueo // Establecer la nueva fecha de bloqueo
-                });
-
-                // Enviar correo al administrador solo si se actualiza la fecha de bloqueo
-                await enviarCorreoAdmin(data, ip);
                 return res.status(403).json({ mensaje: 'Acceso denegado. IP diferente en menos de 24 horas.' });
             }
         }
