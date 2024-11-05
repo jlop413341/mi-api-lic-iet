@@ -162,6 +162,15 @@ app.post('/verificar-licencia', async (req, res) => {
             });
         }
 
+        // Agregar IP al historial de accesos si es diferente de la última IP
+        const historicoIPAcceso = data.historicoIPAcceso || [];
+        if (historicoIPAcceso.length === 0 || historicoIPAcceso[historicoIPAcceso.length - 1] !== ip) {
+            historicoIPAcceso.push(ip);
+            await licenciasRef.doc(doc.id).update({
+                historicoIPAcceso: historicoIPAcceso
+            });
+        }
+
         // Acceso permitido
         return res.status(200).json({ mensaje: 'Acceso permitido.' });
     } catch (error) {
