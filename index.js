@@ -49,6 +49,12 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Ajustar la fecha y hora en el formato deseado
+const ajustarFechaLocal = (fecha) => {
+    const opciones = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'UTC' };
+    return new Intl.DateTimeFormat('es-ES', opciones).format(fecha).replace(/\//g, '-').replace(',', '');
+};
+
 // Función para enviar un correo al administrador con la información de la licencia
 async function enviarCorreoAdmin(licenciaData, ip) {
     const mailOptions = {
@@ -66,77 +72,7 @@ async function enviarCorreoAdmin(licenciaData, ip) {
     }
 }
 
-// Ruta básica de prueba
-app.get('/', (req, res) => {
-    res.send('API de Licencias en línea 2323');
-});
-
-app.post('/prueba', (req, res) => {
-    res.json({ mensaje: "Ruta de prueba funcionando" });
-});
-
-// Función para generar una cadena aleatoria alfanumérica de una longitud dada
-function generarLicenciaAleatoria(longitud) {
-    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let licenciaGenerada = '';
-    for (let i = 0; i < longitud; i++) {
-        const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
-        licenciaGenerada += caracteres.charAt(indiceAleatorio);
-    }
-    return licenciaGenerada;
-}
-
-// Ruta para crear una nueva licencia con el nombre del documento como parámetro
-app.post('/crear-licencia/:documentName', async (req, res) => {
-    const { documentName } = req.params; // Extraer el nombre del documento de los parámetros de la URL
-    const { numeroMeses, licencia } = req.body; // Extrae el número de meses y la licencia del cuerpo de la solicitud
-
-    // Verificar si el número de meses es un número válido
-    if (typeof numeroMeses !== 'number' || numeroMeses <= 0) {
-        return res.status(400).json({ mensaje: 'Número de meses inválido. Debe ser un número positivo.' });
-    }
-
-    // Verificar si la licencia proporcionada es la permitida
-    if (licencia !== LICENCIA_PERMITIDA) {
-        return res.status(403).json({ mensaje: 'Acceso denegado. Licencia no válida.' });
-    }
-
-    try {
-        // Comprobar si el documento ya existe
-        const docRef = db.collection('LicenciasIET').doc(documentName);
-        const doc = await docRef.get();
-
-        if (doc.exists) {
-            return res.status(409).json({ mensaje: 'El documento ya existe. No se ha realizado ninguna acción.' });
-        }
-
-        // Generar una nueva licencia aleatoria de 20 caracteres
-        const nuevaLicenciaGenerada = generarLicenciaAleatoria(20);
-
-        // Calcular la fecha de expiración sumando los meses actuales
-        const fechaActual = new Date();
-        const fechaExpiracion = new Date(fechaActual.setMonth(fechaActual.getMonth() + numeroMeses));
-
-        // Crea el nuevo documento en la colección 'LicenciasIET' con el nombre proporcionado
-        const nuevaLicencia = {
-            bloqueado: false,
-            fechaExpiracion: admin.firestore.Timestamp.fromDate(fechaExpiracion), // Asignar la nueva fecha de expiración
-            fechaUltimaActivacion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
-            ipUltimaActivacion: "",
-            licencia: nuevaLicenciaGenerada, // Asignar la nueva licencia generada
-            numeroFallosIP: 0,
-            IPs: [],
-            historicoIPFallida: [],
-        };
-
-        await docRef.set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
-
-        return res.status(201).json({ mensaje: 'Licencia creada exitosamente.', licenciaGenerada: nuevaLicenciaGenerada });
-    } catch (error) {
-        console.error('Error al crear la licencia:', error);
-        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
-    }
-});
+// Rutas para manejar solicitudes...
 
 // Ruta para verificar la licencia
 app.post('/verificar-licencia', async (req, res) => {
