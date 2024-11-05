@@ -4,6 +4,7 @@ const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
 const MAX_IPS = 4; // Máximo de IPs a almacenar
+const LICENCIA_PERMITIDA = "aa9eg85hj9ae85hg9ae58g98eg8aweg0a8e5gh8e5ae0";
 
 
 // Configurar dotenv para usar variables de entorno
@@ -88,6 +89,43 @@ app.get('/', (req, res) => {
 app.post('/prueba', (req, res) => {
     res.json({ mensaje: "Ruta de prueba funcionando" });
 });
+
+
+// Ruta para crear una nueva licencia
+app.post('/crear-licencia', async (req, res) => {
+    const { licencia, ...otrosCampos } = req.body; // Extrae otros campos del cuerpo de la solicitud
+
+    // Verificar si la licencia proporcionada es la permitida
+    if (licencia !== LICENCIA_PERMITIDA) {
+        return res.status(403).json({ mensaje: 'Acceso denegado. Licencia no válida.' });
+    }
+
+    try {
+        // Crea el nuevo documento en la colección 'LicenciasIET'
+        const nuevaLicencia = {
+            bloqueado: false,
+            fechaExpiracion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
+            fechaUltimaActivacion: admin.firestore.Timestamp.fromDate(new Date('2001-01-01T00:00:00Z')),
+            ipUltimaActivacion: "",
+            licencia: licencia,
+            numeroFallosIP: 0,
+            IPs: [],
+            historicoIPFallida: [],
+            ...otrosCampos // Incluye otros campos si es necesario
+        };
+
+        await db.collection('LicenciasIET').add(nuevaLicencia);
+
+        return res.status(201).json({ mensaje: 'Licencia creada exitosamente.' });
+    } catch (error) {
+        console.error('Error al crear la licencia:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+});
+
+
+
+
 
 
 
