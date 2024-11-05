@@ -71,8 +71,8 @@ const ajustarFechaLocal = (fecha) => {
 };
 
 // Ruta básica de prueba
-app.get('/', (req, res) => {
-    res.send('API de Licencias en línea');
+app.get('/prueba', (req, res) => {
+    res.send('API de Licencias en línea 2323');
 });
 
 // Ruta para verificar la licencia
