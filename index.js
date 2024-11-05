@@ -16,16 +16,25 @@ app.use(express.json());
 const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
 
 
-
-if (process.env.FIREBASE_CREDENTIALS_JSON) {
+let serviceAccount;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
-        const credentials = JSON.parse(process.env.FIREBASE_CREDENTIALS_JSON);
-        console.log("Firebase credentials loaded successfully:", credentials);
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        console.log("Firebase credentials loaded successfully.");
     } catch (error) {
         console.error("Error parsing Firebase credentials JSON:", error);
     }
 } else {
-    console.error("FIREBASE_CREDENTIALS_JSON environment variable is not set.");
+    console.error("FIREBASE_SERVICE_ACCOUNT environment variable is not set.");
+}
+
+// Inicia Firebase solo si las credenciales fueron cargadas correctamente
+if (serviceAccount) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
+} else {
+    console.error("Failed to initialize Firebase Admin SDK due to missing credentials.");
 }
 
 
