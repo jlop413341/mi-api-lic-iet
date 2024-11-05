@@ -73,6 +73,18 @@ async function enviarCorreoAdmin(licenciaData, ip) {
 }
 
 
+// Función para generar una cadena aleatoria alfanumérica de una longitud dada
+function generarLicenciaAleatoria(longitud) {
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let licenciaGenerada = '';
+    for (let i = 0; i < longitud; i++) {
+        const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+        licenciaGenerada += caracteres.charAt(indiceAleatorio);
+    }
+    return licenciaGenerada;
+}
+
+
 
 // Ruta para crear una nueva licencia con el nombre del documento como parámetro
 app.post('/crear-licencia/:documentName', async (req, res) => {
