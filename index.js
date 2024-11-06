@@ -193,8 +193,13 @@ app.post('/verificar-licencia', async (req, res) => {
                     }
 
                     // Incrementar el contador de fallos de IP y establecer la fecha de bloqueo
+                    //numeroFallosIP++;
+                    //const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 horas en milisegundos
+                    // Por esta lógica
                     numeroFallosIP++;
-                    const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 horas en milisegundos
+                    const diasBloqueo = Math.min(numeroFallosIP, 7); // Limitar el número de días a 7
+                    const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + diasBloqueo * 24 * 60 * 60 * 1000)); // Calcular la nueva fecha de bloqueo
+                    
                     await licenciasRef.doc(doc.id).update({
                         numeroFallosIP,
                         historicoIPFallida,
