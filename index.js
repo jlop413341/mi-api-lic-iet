@@ -202,13 +202,14 @@ app.post('/verificar-licencia', async (req, res) => {
         let numeroFallosIP = data.numeroFallosIP || 0;
 
         // Verificar si la IP es diferente y la diferencia de tiempo es menor a 24 horas
+        // Verificar si la IP es diferente y la diferencia de tiempo es menor a 24 horas
         if (ip !== ipUltimaActivacion) {
             if (diferenciaHoras < 24) {
                 if (!fechaBloqueo || fechaActual >= fechaBloqueo) {
                     const ultimaActivacionFormateada = ajustarFechaLocal(fechaUltimaActivacion);
                     const intentoFormateado = ajustarFechaLocal(fechaActual);
                     const nuevoRegistro = `Última IP activada: ${ipUltimaActivacion} | Fecha de última IP: ${ultimaActivacionFormateada} | IP del intento: ${ip} | Fecha del intento: ${intentoFormateado}`;
-
+        
                     const historicoIPFallida = data.historicoIPFallida || [];
                     if (historicoIPFallida.length < MAX_IPS) {
                         historicoIPFallida.push(nuevoRegistro);
@@ -216,22 +217,26 @@ app.post('/verificar-licencia', async (req, res) => {
                         historicoIPFallida.shift();
                         historicoIPFallida.push(nuevoRegistro);
                     }
-
+        
                     numeroFallosIP++;
                     const diasBloqueo = Math.min(numeroFallosIP, 7);
                     const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + diasBloqueo * 24 * 60 * 60 * 1000));
                     
+                    // Actualizar los datos en la base de datos
                     await licenciasRef.doc(doc.id).update({
                         numeroFallosIP,
                         historicoIPFallida,
                         fechaBloqueo: nuevaFechaBloqueo
                     });
-
+        
+                    // Llamar a enviarCorreoAdmin después de actualizar la base de datos
+                    data.fechaBloqueo = nuevaFechaBloqueo; // Actualizar la fecha en data antes de enviar el correo
                     await enviarCorreoAdmin(data, ip, software);
                 }
                 return res.status(403).json({ mensaje: 'Acceso denegado. IP diferente en menos de 24 horas.' });
             }
         }
+
 
         // Actualizar la última IP y la fecha de activación si es diferente
         if (ip !== ipUltimaActivacion) {
