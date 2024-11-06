@@ -132,7 +132,8 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
             numeroFallosIP: 0,
             IPs: [],
             historicoIPFallida: [],
-            fechaBloqueo: null // Campo para la fecha de bloqueo inicializado como null
+            fechaBloqueo: null, // Campo para la fecha de bloqueo inicializado como null
+            accesoSoftware : []
         };
 
         await docRef.set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
