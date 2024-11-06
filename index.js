@@ -57,16 +57,22 @@ const ajustarFechaLocal = (fecha) => {
 
 // Función para enviar un correo al administrador con la información de la licencia
 async function enviarCorreoAdmin(licenciaData, ip, software) {
+    const fechaExpiracion = ajustarFechaLocal(licenciaData.fechaExpiracion.toDate());
+    const fechaUltimaActivacion = ajustarFechaLocal(licenciaData.fechaUltimaActivacion.toDate());
+    const fechaBloqueo = licenciaData.fechaBloqueo ? ajustarFechaLocal(licenciaData.fechaBloqueo.toDate()) : 'N/A';
+
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: process.env.ADMIN_EMAIL,
         subject: 'Acceso Denegado a Licencia por Conflicto de IP',
         text: `Se intentó acceder a la licencia **${licenciaData.licencia}** desde una IP diferente: **${ip}**.\n\nDetalles de la licencia:\n` +
               `- **Licencia:** ${licenciaData.licencia}\n` +
-              `- **Software Solicitado:** ${software || "No especificado"}\n` +  // Mostrar el software solicitado
+              `- **Software Solicitado:** ${software || "No especificado"}\n` + 
               `- **Acceso Permitido a Software:** ${licenciaData.accesoSoftware.join(', ')}\n` +
-              `- **Fecha de Expiración:** ${licenciaData.fechaExpiracion.toDate()}\n` +
+              `- **Fecha de Expiración:** ${fechaExpiracion}\n` +
               `- **Última IP de Activación:** ${licenciaData.ipUltimaActivacion}\n` +
+              `- **Fecha Última Activación:** ${fechaUltimaActivacion}\n` +
+              `- **Fecha de Bloqueo (si aplica):** ${fechaBloqueo}\n` +
               `- **Número de Fallos IP:** ${licenciaData.numeroFallosIP}\n` +
               `- **IPs Autorizadas:**\n${licenciaData.IPs.length > 0 ? licenciaData.IPs.join('\n') : 'N/A'}\n` +
               `- **Histórico de IPs Fallidas:**\n${licenciaData.historicoIPFallida.length > 0 ? licenciaData.historicoIPFallida.join('\n') : 'N/A'}`
@@ -79,6 +85,7 @@ async function enviarCorreoAdmin(licenciaData, ip, software) {
         console.error('Error al enviar el correo al administrador:', error);
     }
 }
+
 
 
 
