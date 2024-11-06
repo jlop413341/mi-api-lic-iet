@@ -56,17 +56,19 @@ const ajustarFechaLocal = (fecha) => {
 };
 
 // Función para enviar un correo al administrador con la información de la licencia
-async function enviarCorreoAdmin(licenciaData, ip) {
+async function enviarCorreoAdmin(licenciaData, ip, software) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: process.env.ADMIN_EMAIL,
         subject: 'Acceso Denegado a Licencia',
         text: `Se intentó acceder a la licencia **${licenciaData.licencia}** desde una IP diferente: **${ip}**.\n\nDetalles de la licencia:\n` +
               `- **Licencia:** ${licenciaData.licencia}\n` +
+              `- **Software Solicitado:** ${software}\n` +
+              `- **Acceso Permitido a Software:** ${licenciaData.accesoSoftware.join(', ')}\n` +
               `- **Fecha de Expiración:** ${licenciaData.fechaExpiracion.toDate()}\n` +
               `- **Última IP de Activación:** ${licenciaData.ipUltimaActivacion}\n` +
               `- **Número de Fallos IP:** ${licenciaData.numeroFallosIP}\n` +
-              `- **IPs:**\n${licenciaData.IPs.length > 0 ? licenciaData.IPs.join('\n') : 'N/A'}\n` + // Cambiar a formato vertical
+              `- **IPs Autorizadas:**\n${licenciaData.IPs.length > 0 ? licenciaData.IPs.join('\n') : 'N/A'}\n` +
               `- **Histórico de IPs Fallidas:**\n${licenciaData.historicoIPFallida.length > 0 ? licenciaData.historicoIPFallida.join('\n') : 'N/A'}`
     };
 
