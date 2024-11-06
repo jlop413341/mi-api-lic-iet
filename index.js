@@ -92,6 +92,7 @@ function generarLicenciaAleatoria(longitud) {
 }
 
 // Ruta para crear una nueva licencia con el nombre del documento como parámetro
+// Ruta para crear una nueva licencia con el nombre del documento como parámetro
 app.post('/crear-licencia/:documentName', async (req, res) => {
     const { documentName } = req.params; // Extraer el nombre del documento de los parámetros de la URL
     const { numeroMeses } = req.body; // Extrae el número de meses del cuerpo de la solicitud
@@ -133,7 +134,9 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
             IPs: [],
             historicoIPFallida: [],
             fechaBloqueo: null, // Campo para la fecha de bloqueo inicializado como null
-            accesoSoftware : []
+
+            // Añadir el campo accesoSoftware con los valores predeterminados
+            accesoSoftware: ["KitOperador", "GestorSGX", "TRMax"]
         };
 
         await docRef.set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
@@ -144,6 +147,7 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
         return res.status(500).json({ mensaje: 'Error interno del servidor.' });
     }
 });
+
 
 // Ruta para verificar la licencia
 app.post('/verificar-licencia', async (req, res) => {
