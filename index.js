@@ -61,7 +61,13 @@ async function enviarCorreoAdmin(licenciaData, ip) {
         from: process.env.EMAIL_USER,
         to: process.env.ADMIN_EMAIL,
         subject: 'Acceso Denegado a Licencia',
-        text: `Se intentó acceder a la licencia **${licenciaData.licencia}** desde una IP diferente: **${ip}**.\n\nDetalles de la licencia:\n- **Licencia:** ${licenciaData.licencia}\n- **Fecha de Expiración:** ${licenciaData.fechaExpiracion.toDate()}\n- **Última IP de Activación:** ${licenciaData.ipUltimaActivacion}\n\n**Histórico de IPs fallidas:**\n${(licenciaData.historicoIPFallida && licenciaData.historicoIPFallida.length > 0) ? licenciaData.historicoIPFallida.join('\n') : 'N/A'}`
+        text: `Se intentó acceder a la licencia **${licenciaData.licencia}** desde una IP diferente: **${ip}**.\n\nDetalles de la licencia:\n` +
+              `- **Licencia:** ${licenciaData.licencia}\n` +
+              `- **Fecha de Expiración:** ${licenciaData.fechaExpiracion.toDate()}\n` +
+              `- **Última IP de Activación:** ${licenciaData.ipUltimaActivacion}\n` +
+              `- **Número de Fallos IP:** ${licenciaData.numeroFallosIP}\n` +
+              `- **IPs:** ${licenciaData.IPs.length > 0 ? licenciaData.IPs.join(', ') : 'N/A'}\n` +
+              `- **Histórico de IPs Fallidas:**\n${licenciaData.historicoIPFallida.length > 0 ? licenciaData.historicoIPFallida.join('\n') : 'N/A'}`
     };
 
     try {
@@ -71,6 +77,7 @@ async function enviarCorreoAdmin(licenciaData, ip) {
         console.error('Error al enviar el correo al administrador:', error);
     }
 }
+
 
 // Función para generar una cadena aleatoria alfanumérica de una longitud dada
 function generarLicenciaAleatoria(longitud) {
