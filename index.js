@@ -60,10 +60,10 @@ async function enviarCorreoAdmin(licenciaData, ip, software) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: process.env.ADMIN_EMAIL,
-        subject: 'Acceso Denegado a Licencia',
+        subject: 'Acceso Denegado a Licencia por Conflicto de IP',
         text: `Se intentó acceder a la licencia **${licenciaData.licencia}** desde una IP diferente: **${ip}**.\n\nDetalles de la licencia:\n` +
               `- **Licencia:** ${licenciaData.licencia}\n` +
-              `- **Software Solicitado:** ${software}\n` +
+              `- **Software Solicitado:** ${software || "No especificado"}\n` +  // Mostrar el software solicitado
               `- **Acceso Permitido a Software:** ${licenciaData.accesoSoftware.join(', ')}\n` +
               `- **Fecha de Expiración:** ${licenciaData.fechaExpiracion.toDate()}\n` +
               `- **Última IP de Activación:** ${licenciaData.ipUltimaActivacion}\n` +
@@ -79,6 +79,7 @@ async function enviarCorreoAdmin(licenciaData, ip, software) {
         console.error('Error al enviar el correo al administrador:', error);
     }
 }
+
 
 
 
@@ -219,7 +220,7 @@ app.post('/verificar-licencia', async (req, res) => {
                         fechaBloqueo: nuevaFechaBloqueo
                     });
 
-                    await enviarCorreoAdmin(data, ip);
+                    await enviarCorreoAdmin(data, ip, software);
                 }
                 return res.status(403).json({ mensaje: 'Acceso denegado. IP diferente en menos de 24 horas.' });
             }
