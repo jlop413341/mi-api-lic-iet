@@ -150,8 +150,9 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
 
 
 // Ruta para verificar la licencia
+// Ruta para verificar la licencia y el acceso al software
 app.post('/verificar-licencia', async (req, res) => {
-    const { licencia } = req.body; // Obtener la licencia del cuerpo de la solicitud
+    const { licencia, software } = req.body; // Obtener la licencia y el software del cuerpo de la solicitud
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress; // Capturar la IP del cliente
 
     try {
@@ -165,6 +166,11 @@ app.post('/verificar-licencia', async (req, res) => {
         const doc = snapshot.docs[0];
         const data = doc.data();
 
+        // Verificar si el software está en el array accesoSoftware
+        if (!data.accesoSoftware || !data.accesoSoftware.includes(software)) {
+            return res.status(403).json({ mensaje: 'Acceso denegado para este software.' });
+        }
+
         // Verificar si la licencia está bloqueada
         const fechaBloqueo = data.fechaBloqueo ? data.fechaBloqueo.toDate() : null;
         const fechaActual = new Date();
@@ -175,7 +181,7 @@ app.post('/verificar-licencia', async (req, res) => {
 
         const fechaExpiracion = data.fechaExpiracion.toDate();
 
-        // Verificar expiración y IP
+        // Verificar expiración de la licencia
         if (fechaActual > fechaExpiracion) {
             return res.status(403).json({ mensaje: 'Licencia expirada.' });
         }
@@ -185,48 +191,39 @@ app.post('/verificar-licencia', async (req, res) => {
         const diferenciaHoras = (fechaActual - fechaUltimaActivacion) / (1000 * 60 * 60);
         let numeroFallosIP = data.numeroFallosIP || 0;
 
-        // Si la IP no coincide y la diferencia de horas es menor a 24
+        // Verificar si la IP es diferente y la diferencia de tiempo es menor a 24 horas
         if (ip !== ipUltimaActivacion) {
-            // Solo incrementa el número de fallos si la diferencia de horas es menor a 24
             if (diferenciaHoras < 24) {
-                // Solo actualizar la fecha de bloqueo si no ha pasado
                 if (!fechaBloqueo || fechaActual >= fechaBloqueo) {
-                    // Crear el nuevo registro para el histórico
                     const ultimaActivacionFormateada = ajustarFechaLocal(fechaUltimaActivacion);
                     const intentoFormateado = ajustarFechaLocal(fechaActual);
                     const nuevoRegistro = `Última IP activada: ${ipUltimaActivacion} | Fecha de última IP: ${ultimaActivacionFormateada} | IP del intento: ${ip} | Fecha del intento: ${intentoFormateado}`;
 
-                    // Actualizar el historial de IPs fallidas
                     const historicoIPFallida = data.historicoIPFallida || [];
                     if (historicoIPFallida.length < MAX_IPS) {
                         historicoIPFallida.push(nuevoRegistro);
                     } else {
-                        historicoIPFallida.shift(); // Eliminar el primer elemento si ya tiene MAX_IPS
+                        historicoIPFallida.shift();
                         historicoIPFallida.push(nuevoRegistro);
                     }
 
-                    // Incrementar el contador de fallos de IP y establecer la fecha de bloqueo
-                    //numeroFallosIP++;
-                    //const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 horas en milisegundos
-                    // Por esta lógica
                     numeroFallosIP++;
-                    const diasBloqueo = Math.min(numeroFallosIP, 7); // Limitar el número de días a 7
-                    const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + diasBloqueo * 24 * 60 * 60 * 1000)); // Calcular la nueva fecha de bloqueo
+                    const diasBloqueo = Math.min(numeroFallosIP, 7);
+                    const nuevaFechaBloqueo = admin.firestore.Timestamp.fromDate(new Date(Date.now() + diasBloqueo * 24 * 60 * 60 * 1000));
                     
                     await licenciasRef.doc(doc.id).update({
                         numeroFallosIP,
                         historicoIPFallida,
-                        fechaBloqueo: nuevaFechaBloqueo // Establecer la nueva fecha de bloqueo
+                        fechaBloqueo: nuevaFechaBloqueo
                     });
 
-                    // Enviar correo al administrador solo si se actualiza la fecha de bloqueo
                     await enviarCorreoAdmin(data, ip);
                 }
                 return res.status(403).json({ mensaje: 'Acceso denegado. IP diferente en menos de 24 horas.' });
             }
         }
 
-        // Actualizar la fecha y la IP de última activación solo si la IP es diferente
+        // Actualizar la última IP y la fecha de activación si es diferente
         if (ip !== ipUltimaActivacion) {
             await licenciasRef.doc(doc.id).update({
                 ipUltimaActivacion: ip,
@@ -238,7 +235,7 @@ app.post('/verificar-licencia', async (req, res) => {
         const historicoIPs = data.IPs || [];
         if (historicoIPs.length === 0 || historicoIPs[historicoIPs.length - 1] !== ip) {
             if (historicoIPs.length >= MAX_IPS) {
-                historicoIPs.shift(); // Eliminar la IP más antigua si ya tiene MAX_IPS
+                historicoIPs.shift();
             }
             historicoIPs.push(ip);
             await licenciasRef.doc(doc.id).update({
@@ -253,6 +250,7 @@ app.post('/verificar-licencia', async (req, res) => {
         return res.status(500).json({ mensaje: 'Error interno del servidor.' });
     }
 });
+
 
 // Iniciar el servidor
 //const PORT = process.env.PORT || 3000;
