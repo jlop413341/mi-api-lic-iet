@@ -66,7 +66,7 @@ async function enviarCorreoAdmin(licenciaData, ip) {
               `- **Fecha de Expiración:** ${licenciaData.fechaExpiracion.toDate()}\n` +
               `- **Última IP de Activación:** ${licenciaData.ipUltimaActivacion}\n` +
               `- **Número de Fallos IP:** ${licenciaData.numeroFallosIP}\n` +
-              `- **IPs:** ${licenciaData.IPs.length > 0 ? licenciaData.IPs.join(', ') : 'N/A'}\n` +
+              `- **IPs:**\n${licenciaData.IPs.length > 0 ? licenciaData.IPs.join('\n') : 'N/A'}\n` + // Cambiar a formato vertical
               `- **Histórico de IPs Fallidas:**\n${licenciaData.historicoIPFallida.length > 0 ? licenciaData.historicoIPFallida.join('\n') : 'N/A'}`
     };
 
@@ -77,6 +77,7 @@ async function enviarCorreoAdmin(licenciaData, ip) {
         console.error('Error al enviar el correo al administrador:', error);
     }
 }
+
 
 
 // Función para generar una cadena aleatoria alfanumérica de una longitud dada
