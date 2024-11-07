@@ -146,7 +146,7 @@ app.post('/crear-licencia/:documentName', async (req, res) => {
             fechaBloqueo: null, // Campo para la fecha de bloqueo inicializado como null
 
             // Añadir el campo accesoSoftware con los valores predeterminados
-            accesoSoftware: ["KitOperador", "GestorSGX", "TRMax"]
+            accesoSoftware: ["KitOperador", "GestorSGX", "TRMax", "SimuladorSGXMatlab"]
         };
 
         await docRef.set(nuevaLicencia); // Usar 'set' para crear el documento con el nombre específico
